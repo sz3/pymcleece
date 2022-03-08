@@ -1,0 +1,7 @@
+build/
+dist/
+mcleece.egg-info/
+__pycache__/
+libmcleece.so*
+.coverage
+*.pyc
