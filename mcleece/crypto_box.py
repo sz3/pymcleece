@@ -1,4 +1,5 @@
 import ctypes
+from ctypes import c_int
 
 from nacl.public import PrivateKey as nacl_PrivateKey, PublicKey as nacl_PublicKey
 
@@ -10,15 +11,33 @@ class PublicKey:
         # check that length matches libmcleece length
         self.data = data
 
+    @classmethod
+    def size(cls):
+        return c_int.in_dll(libmcleece(), 'mcleece_crypto_box_PUBLIC_KEY_SIZE').value
 
 class PrivateKey:
     def __init__(self, data):
         # check that length matches libmcleece length
         self.data = data
 
+    @classmethod
+    def size(cls):
+        return c_int.in_dll(libmcleece(), 'mcleece_crypto_box_SECRET_KEY_SIZE').value
+
+    @classmethod
+    def generate(cls):
+        pk_size = PublicKey.size()
+        sk_size = cls.size()
+        pk = (ctypes.c_uint8 * pk_size)()
+        sk = (ctypes.c_uint8 * sk_size)()
+        res = libmcleece().mcleece_crypto_box_keypair(ctypes.byref(pk), ctypes.byref(sk))
+        if res != 0:
+            return None
+        return PrivateKey(bytes(sk)), PublicKey(bytes(pk))
+
     def get_nacl_public_key(self):
         # truncate a copy of self.data, and pass to PrivateKey here...
-        sodium_pkey_size = mcleece().mcleece_crypto_box_SODIUM_PUBLIC_KEY_SIZE
+        sodium_pkey_size = c_int.in_dll(libmcleece(), 'mcleece_crypto_box_SODIUM_PUBLIC_KEY_SIZE').value
         return bytes(nacl_PrivateKey(self.data[:sodium_pkey_size]).public_key)
 
 
@@ -39,13 +58,14 @@ class SealedBox:
             self.public_key = (ctypes.c_uint8 * len(pubkey)).from_buffer_copy(pubkey)
 
 
-    def encrypt(msg):
-        if not self.public_key:
-            raise Excepion('not initialized for encryption!')
+    def encrypt(self, msg):
+        if not self.public_key or len(self.public_key) < PublicKey.size():
+            raise Exception('not initialized for encryption!')
 
-        buffer_size = len(msg) + mcleece().mcleece_crypto_box_MESSAGE_HEADER_SIZE
-        buff = (ctypes.c_uint8 * buffer_size).from_buffer_copy(msg)
-        scratch_size = len(msg) + mcleece().mcleece_crypto_box_SODIUM_MESSAGE_HEADER_SIZE
+        buffer_size = len(msg) + c_int.in_dll(libmcleece(), 'mcleece_crypto_box_MESSAGE_HEADER_SIZE').value
+        padmsg = bytes(msg) + b'\0'*(buffer_size - len(msg))
+        buff = (ctypes.c_uint8 * buffer_size).from_buffer_copy(padmsg)
+        scratch_size = len(msg) + c_int.in_dll(libmcleece(), 'mcleece_crypto_box_SODIUM_MESSAGE_HEADER_SIZE').value
         scratch = (ctypes.c_uint8 * scratch_size)()
         '''
         allocate buffer for ciphertext
@@ -54,20 +74,20 @@ class SealedBox:
         make C call, and if it succeeds, return ciphertext result
         '''
 
-        res = mcleece().mcleece_inplace_crypto_box_seal(
+        res = libmcleece().mcleece_inplace_crypto_box_seal(
             ctypes.byref(buff), ctypes.c_uint32(buffer_size), ctypes.byref(scratch), ctypes.byref(self.public_key)
         )
         if res != 0:
             return None
         return bytes(bytearray(buff))
 
-    def decrypt(ciphertext):
+    def decrypt(self, ciphertext):
         if not self.secret_key:
-            raise Excepion('not initialized for decryption!')
+            raise Exception('not initialized for decryption!')
 
         buffer_size = len(ciphertext)
         buff = (ctypes.c_uint8 * buffer_size).from_buffer_copy(ciphertext)
-        scratch_size = len(ciphertext) - mcleece().mcleece_simple_MESSAGE_HEADER_SIZE
+        scratch_size = len(ciphertext) - c_int.in_dll(libmcleece(), 'mcleece_simple_MESSAGE_HEADER_SIZE').value
         scratch = (ctypes.c_uint8 * scratch_size)()
 
         '''
@@ -76,12 +96,12 @@ class SealedBox:
         allocate scratch buffer for intermediate result
         make C call, and if it succeeds, return msg result
         '''
-        res = mcleece().mcleece_inplace_crypto_box_seal_open(
+        res = libmcleece().mcleece_inplace_crypto_box_seal_open(
             ctypes.byref(buff), ctypes.c_uint32(buffer_size), ctypes.byref(scratch),
             ctypes.byref(self.public_key), ctypes.byref(self.secret_key)
         )
         if res != 0:
             return None
 
-        msg_size = buffer_size - mcleece_crypto_box_MESSAGE_HEADER_SIZE
+        msg_size = buffer_size - c_int.in_dll(libmcleece(), 'mcleece_crypto_box_MESSAGE_HEADER_SIZE').value
         return bytes(bytearray(buff)[:msg_size])
