@@ -81,7 +81,7 @@ class SealedBox:
         return bytes(bytearray(buff))
 
     def decrypt(self, ciphertext):
-        if not self.secret_key:
+        if not self.secret_key or len(self.secret_key) < PrivateKey.size():
             raise Exception('not initialized for decryption!')
 
         buffer_size = len(ciphertext)

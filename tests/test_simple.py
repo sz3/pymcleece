@@ -1,9 +1,9 @@
 from unittest import TestCase
 
-from mcleece.crypto_box import PrivateKey, PublicKey, SealedBox
+from mcleece.simple import PrivateKey, PublicKey, SealedBox
 
 
-class CryptoBoxTest(TestCase):
+class SimpleTest(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.sk, cls.pk = PrivateKey.generate()
