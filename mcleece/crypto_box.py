@@ -1,8 +1,6 @@
 import ctypes
 from ctypes import c_int
 
-from nacl.public import PrivateKey as nacl_PrivateKey, PublicKey as nacl_PublicKey
-
 from .lib import libmcleece
 
 
@@ -37,6 +35,7 @@ class PrivateKey:
 
     def get_nacl_public_key(self):
         # truncate a copy of self.data, and pass to PrivateKey here...
+        from nacl.public import PrivateKey as nacl_PrivateKey
         sodium_pkey_size = c_int.in_dll(libmcleece(), 'mcleece_crypto_box_SODIUM_PUBLIC_KEY_SIZE').value
         return bytes(nacl_PrivateKey(self.data[:sodium_pkey_size]).public_key)
 
