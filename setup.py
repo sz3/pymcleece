@@ -64,6 +64,7 @@ class CMakeBuild(build_ext):
         subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
         subprocess.check_call(['cmake',
                                '--build', '.',
+                               '--target', 'mcleece',
                                ] + build_args,
                               cwd=self.build_temp)
 
