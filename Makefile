@@ -10,7 +10,7 @@ clean:
 	find . -name '*.py[co]' -delete
 	find . -name '__pycache__' -delete
 	rm -rf build/ *.egg *.egg-info/
-	rm mcleece/libmcleece*
+	rm mcleece/libmcleece.*
 
 dist-clean:
 	rm -rf dist/

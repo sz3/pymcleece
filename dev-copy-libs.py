@@ -1,5 +1,6 @@
 from glob import iglob
-from os.path import join as path_join, abspath, dirname, basename
+from os import makedirs
+from os.path import join as path_join, abspath, dirname, basename, isdir
 from shutil import copyfile
 
 
@@ -8,6 +9,8 @@ def main():
     builddir = path_join(dirname(abspath(__file__)), 'build')
     localdir = path_join(dirname(abspath(__file__)), 'mcleece')
     for f in iglob(f'{builddir}/**/libmcleece*', recursive=True):
+        if isdir(f):
+            continue
         print(f'copying {f}')
         copyfile(f, path_join(localdir, basename(f)))
 

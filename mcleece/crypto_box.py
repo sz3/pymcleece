@@ -2,7 +2,7 @@ import ctypes
 
 from nacl.public import PrivateKey as nacl_PrivateKey, PublicKey as nacl_PublicKey
 
-from .libmcleece import libmcleece
+from .lib import libmcleece
 
 
 class PublicKey:

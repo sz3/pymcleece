@@ -39,7 +39,6 @@ class CMakeBuild(build_ext):
         extdir = path_join(abspath(dirname(self.get_ext_fullpath(ext.name))), 'mcleece')
         print('extdir is {}'.format(extdir))
         cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir]
-        cmake_args += ['-DBUILD_SHARED_LIBS=1']
 
         build_type = os.environ.get("BUILD_TYPE", "Release")
         build_args = ['--config', build_type]
@@ -60,12 +59,11 @@ class CMakeBuild(build_ext):
         env = os.environ.copy()
         env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(env.get('CXXFLAGS', ''),
                                                               self.distribution.get_version())
-        if not os.path.exists(self.build_temp):
-            os.makedirs(self.build_temp)
+        os.makedirs(self.build_temp, exist_ok=True)
+        print(f'build dir {self.build_temp}, srcdir {ext.sourcedir}')
         subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
         subprocess.check_call(['cmake',
                                '--build', '.',
-                               '--target', os.path.basename(ext.name)
                                ] + build_args,
                               cwd=self.build_temp)
 
