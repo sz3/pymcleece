@@ -1,0 +1,8 @@
+.cmake/
+CMakeFiles/
+build*/
+dist/
+CMakeCache.txt
+Makefile
+CTestTestfile.cmake
+cmake_install.cmake
