@@ -38,6 +38,7 @@ class CMakeBuild(build_ext):
     def build_extension(self, ext):
         extdir = path_join(abspath(dirname(self.get_ext_fullpath(ext.name))), 'mcleece')
         print('extdir is {}'.format(extdir))
+        cmake_args = ['-DBUILD_LIBSODIUM=1']
         cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir]
 
         build_type = os.environ.get("BUILD_TYPE", "Release")
