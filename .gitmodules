@@ -1,0 +1,3 @@
+[submodule "libmcleece"]
+	path = libmcleece
+	url = https://github.com/sz3/libmcleece
