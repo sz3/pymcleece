@@ -8,6 +8,13 @@ class CryptoBoxTest(TestCase):
     def setUpClass(cls):
         cls.sk, cls.pk = PrivateKey.generate()
 
+    def test_serialize_keys(self):
+        pk = PublicKey(bytes(self.pk))
+        self.assertEqual(pk.data, self.pk.data)
+
+        sk = PrivateKey(bytes(self.sk))
+        self.assertEqual(sk.data, self.sk.data)
+
     def test_roundtrip(self):
         box = SealedBox(self.pk)
         data = b'0123456789' * 10

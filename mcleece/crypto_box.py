@@ -9,6 +9,9 @@ class PublicKey:
         # check that length matches libmcleece length
         self.data = data
 
+    def __bytes__(self):
+        return self.data
+
     @classmethod
     def size(cls):
         return c_int.in_dll(libmcleece(), 'mcleece_crypto_box_PUBLIC_KEY_SIZE').value
@@ -17,6 +20,9 @@ class PrivateKey:
     def __init__(self, data):
         # check that length matches libmcleece length
         self.data = data
+
+    def __bytes__(self):
+        return self.data
 
     @classmethod
     def size(cls):
