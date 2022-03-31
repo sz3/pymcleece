@@ -17,7 +17,7 @@ class SimpleTest(TestCase):
 
     def test_roundtrip(self):
         box = SealedBox(self.pk)
-        self.assertEqual(266, box.message_header_size)
+        self.assertEqual(266, box.message_header_size())
 
         data = b'0123456789' * 10
         ciphertext = box.encrypt(data)

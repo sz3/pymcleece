@@ -54,8 +54,8 @@ class SealedBox:
         elif isinstance(key, PrivateKey):
             self.secret_key = (ctypes.c_uint8 * len(key.data)).from_buffer_copy(key.data)
 
-    @property
-    def message_header_size(self):
+    @classmethod
+    def message_header_size(cls):
         return c_int.in_dll(libmcleece(), 'mcleece_simple_MESSAGE_HEADER_SIZE').value
 
     def encrypt(self, msg):
@@ -64,7 +64,7 @@ class SealedBox:
 
         msg_size = len(msg)
         msg = (ctypes.c_uint8 * msg_size).from_buffer_copy(msg)
-        ciphertext_size = msg_size + self.message_header_size
+        ciphertext_size = msg_size + self.message_header_size()
         ciphertext = (ctypes.c_uint8 * ciphertext_size)()
 
         res = libmcleece().mcleece_simple_encrypt(
@@ -80,7 +80,7 @@ class SealedBox:
 
         ciphertext_size = len(ciphertext)
         ciphertext = (ctypes.c_uint8 * ciphertext_size).from_buffer_copy(ciphertext)
-        msg_size = ciphertext_size - self.message_header_size
+        msg_size = ciphertext_size - self.message_header_size()
         msg = (ctypes.c_uint8 * msg_size)()
 
         res = libmcleece().mcleece_simple_decrypt(
