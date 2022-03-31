@@ -62,12 +62,15 @@ class SealedBox:
             pubkey = key.get_nacl_public_key()
             self.public_key = (ctypes.c_uint8 * len(pubkey)).from_buffer_copy(pubkey)
 
+    @property
+    def message_header_size(self):
+        return c_int.in_dll(libmcleece(), 'mcleece_crypto_box_MESSAGE_HEADER_SIZE').value
 
     def encrypt(self, msg):
         if not self.public_key or len(self.public_key) < PublicKey.size():
             raise Exception('not initialized for encryption!')
 
-        buffer_size = len(msg) + c_int.in_dll(libmcleece(), 'mcleece_crypto_box_MESSAGE_HEADER_SIZE').value
+        buffer_size = len(msg) + self.message_header_size
         padmsg = bytes(msg) + b'\0'*(buffer_size - len(msg))
         buff = (ctypes.c_uint8 * buffer_size).from_buffer_copy(padmsg)
         scratch_size = len(msg) + c_int.in_dll(libmcleece(), 'mcleece_crypto_box_SODIUM_MESSAGE_HEADER_SIZE').value
@@ -108,5 +111,5 @@ class SealedBox:
         if res != 0:
             return None
 
-        msg_size = buffer_size - c_int.in_dll(libmcleece(), 'mcleece_crypto_box_MESSAGE_HEADER_SIZE').value
+        msg_size = buffer_size - self.message_header_size
         return bytes(bytearray(buff)[:msg_size])
