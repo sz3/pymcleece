@@ -75,7 +75,7 @@ def read_version():
 
 
 setup(
-    name='pymcleece',
+    name='mcleece',
     license='MIT',
     url="https://github.com/sz3/pymcleece",
     version=read_version(),
