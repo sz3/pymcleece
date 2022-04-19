@@ -12,7 +12,7 @@ or with pip:
 pip install mcleece
 ```
 
-... linux should work, windows/mac are unknown at the moment.
+... linux should work, macOS *could* work, windows is unknown at the moment.
 
 ## Usage
 
