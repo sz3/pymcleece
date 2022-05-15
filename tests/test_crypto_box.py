@@ -17,13 +17,13 @@ class CryptoBoxTest(TestCase):
 
     def test_roundtrip(self):
         box = SealedBox(self.pk)
-        self.assertEqual(314, box.message_header_size())
+        self.assertEqual(274, box.message_header_size())
 
         data = b'0123456789' * 10
         ciphertext = box.encrypt(data)
 
         self.assertTrue(ciphertext)
-        self.assertEqual(len(data) + 314, len(ciphertext))
+        self.assertEqual(len(data) + 274, len(ciphertext))
 
         box2 = SealedBox(self.sk)
         msg = box2.decrypt(ciphertext)
