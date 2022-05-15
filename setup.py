@@ -71,7 +71,7 @@ class CMakeBuild(build_ext):
 
 
 def read_version():
-    return '0.1.1'  # pull version from libmcleece, eventually
+    return '0.2.0'  # pull version from libmcleece, eventually
 
 
 setup(

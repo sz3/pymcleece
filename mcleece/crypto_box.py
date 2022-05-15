@@ -70,46 +70,32 @@ class SealedBox:
         if not self.public_key or len(self.public_key) < PublicKey.size():
             raise Exception('not initialized for encryption!')
 
-        buffer_size = len(msg) + self.message_header_size()
-        padmsg = bytes(msg) + b'\0'*(buffer_size - len(msg))
-        buff = (ctypes.c_uint8 * buffer_size).from_buffer_copy(padmsg)
-        scratch_size = len(msg) + c_int.in_dll(libmcleece(), 'mcleece_crypto_box_SODIUM_MESSAGE_HEADER_SIZE').value
-        scratch = (ctypes.c_uint8 * scratch_size)()
-        '''
-        allocate buffer for ciphertext
-        put msg into it(!)
-        allocate scratch buffer for intermediate result
-        make C call, and if it succeeds, return ciphertext result
-        '''
+        msg_size = len(msg)
+        msg = (ctypes.c_uint8 * msg_size).from_buffer_copy(msg)
+        ciphertext_size = msg_size + self.message_header_size()
+        ciphertext = (ctypes.c_uint8 * ciphertext_size)()
 
-        res = libmcleece().mcleece_inplace_crypto_box_seal(
-            ctypes.byref(buff), ctypes.c_uint32(buffer_size), ctypes.byref(scratch), ctypes.byref(self.public_key)
+        res = libmcleece().mcleece_crypto_box_seal(
+            ctypes.byref(ciphertext), ctypes.byref(msg), ctypes.c_uint32(msg_size), ctypes.byref(self.public_key)
         )
         if res != 0:
             return None
-        return bytes(bytearray(buff))
+        return bytes(bytearray(ciphertext))
 
     def decrypt(self, ciphertext):
         if not self.secret_key or len(self.secret_key) < PrivateKey.size():
             raise Exception('not initialized for decryption!')
 
-        buffer_size = len(ciphertext)
-        buff = (ctypes.c_uint8 * buffer_size).from_buffer_copy(ciphertext)
-        scratch_size = len(ciphertext) - c_int.in_dll(libmcleece(), 'mcleece_simple_MESSAGE_HEADER_SIZE').value
-        scratch = (ctypes.c_uint8 * scratch_size)()
+        ciphertext_size = len(ciphertext)
+        ciphertext = (ctypes.c_uint8 * ciphertext_size).from_buffer_copy(ciphertext)
+        msg_size = ciphertext_size - self.message_header_size()
+        msg = (ctypes.c_uint8 * msg_size)()
 
-        '''
-        allocate buffer for ciphertext
-        put ciphertext into it
-        allocate scratch buffer for intermediate result
-        make C call, and if it succeeds, return msg result
-        '''
-        res = libmcleece().mcleece_inplace_crypto_box_seal_open(
-            ctypes.byref(buff), ctypes.c_uint32(buffer_size), ctypes.byref(scratch),
+        res = libmcleece().mcleece_crypto_box_seal_open(
+            ctypes.byref(msg), ctypes.byref(ciphertext), ctypes.c_uint32(ciphertext_size),
             ctypes.byref(self.public_key), ctypes.byref(self.secret_key)
         )
         if res != 0:
             return None
 
-        msg_size = buffer_size - self.message_header_size()
-        return bytes(bytearray(buff)[:msg_size])
+        return bytes(bytearray(msg))
