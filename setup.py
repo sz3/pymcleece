@@ -93,4 +93,8 @@ setup(
     classifiers=[
         'License :: OSI Approved :: MIT License',
     ],
+
+    install_requires=[
+        'PyNaCl>=1.3.0',
+    ],
 )
